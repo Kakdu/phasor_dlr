@@ -1,3 +1,41 @@
+# --------------------------
+# Do ignore this script, it is a work in progress and does not work yet.
+# --------------------------
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
