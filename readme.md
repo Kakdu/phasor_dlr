@@ -71,10 +71,11 @@ Plots for estimated states, Kalman gain, and smoothed temperature
 All simulation results are saved in results/figures/ and results/logs/.
 Folders are organized by method:
 
-bayesian/ → Posterior distributions and trend plots
+bayesian/ --> Posterior distributions and trend plots
 
-error_propagation/ → Distributions, amplitudes, variances, and phase differences
+error_propagation/ --> Distributions, amplitudes, variances, and phase differences
 
-sobol/ → Sensitivity analysis plots (S1, S2, ST)
+sobol/ --> Sensitivity analysis plots (S1, S2, ST)
 
-ukf/ → UKF state estimates, temperature, and Kalman gain plots
+ukf/ --> UKF state estimates, temperature, and Kalman gain plots
+
