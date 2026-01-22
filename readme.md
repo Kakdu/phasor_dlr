@@ -41,7 +41,9 @@ Monte Carlo simulations
 
 Systematic error modeling
 
-Generates voltage, current, and phase difference distributions
+Generates voltage, current, phase difference, average real power, power loss, and temperature distributions
+
+A sweep over current to show temperature variance for different conductor models over their expected operating currents.
 
 2. Sobol Sensitivity Analysis
 
@@ -49,11 +51,13 @@ Computes first-order, second-order, and total Sobol indices
 
 Evaluates sensitivity of temperature and electrical phasor parameters
 
+A sweep over the power factor to show the major contribution to error at different values.
+
 3. Bayesian Inference
 
 Supports prior specification and likelihood modeling
 
-Posterior estimation with visualization of HDI and RMSE trends
+Posterior estimation with visualization of HDI and RMSE trends over number of measurements
 
 4. Unscented Kalman Filter (UKF)
 
