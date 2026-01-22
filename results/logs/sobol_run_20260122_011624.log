@@ -1,0 +1,66 @@
+Sobol Sensitivity Indices Log - 2026-01-22 01:16:24
+
+============================================================
+
+S1 indices summary:
+
+  rVU_s: mean=0.130432, var=0, min=0.130432, max=0.130432
+  rVT_s: mean=0.000243828, var=0, min=0.000243828, max=0.000243828
+  rVS1_s: mean=0.129366, var=0, min=0.129366, max=0.129366
+  rVS2_s: mean=0.00522697, var=0, min=0.00522697, max=0.00522697
+  rCU_s: mean=0.000206163, var=0, min=0.000206163, max=0.000206163
+  rCT_s: mean=8.05161e-05, var=0, min=8.05161e-05, max=8.05161e-05
+  rCS_s: mean=0.130609, var=0, min=0.130609, max=0.130609
+  rVU_r: mean=0.125239, var=0, min=0.125239, max=0.125239
+  rVT_r: mean=0.000227486, var=0, min=0.000227486, max=0.000227486
+  rVS1_r: mean=0.127169, var=0, min=0.127169, max=0.127169
+  rVS2_r: mean=0.0050917, var=0, min=0.0050917, max=0.0050917
+  rCU_r: mean=0.000205836, var=0, min=0.000205836, max=0.000205836
+  rCT_r: mean=0.000100963, var=0, min=0.000100963, max=0.000100963
+  rCS_r: mean=0.127102, var=0, min=0.127102, max=0.127102
+  thetaVU_s: mean=0.103412, var=0, min=0.103412, max=0.103412
+  thetaVT_s: mean=0.000196782, var=0, min=0.000196782, max=0.000196782
+  thetaVS1_s: mean=0.00410321, var=0, min=0.00410321, max=0.00410321
+  thetaVS2_s: mean=0.00275898, var=0, min=0.00275898, max=0.00275898
+  thetaCU_s: mean=0.00011684, var=0, min=0.00011684, max=0.00011684
+  thetaCT_s: mean=8.23163e-15, var=0, min=8.23163e-15, max=8.23163e-15
+  thetaCS_s: mean=0.00547802, var=0, min=0.00547802, max=0.00547802
+  thetaVU_r: mean=0.0920999, var=0, min=0.0920999, max=0.0920999
+  thetaVT_r: mean=0.000111503, var=0, min=0.000111503, max=0.000111503
+  thetaVS1_r: mean=0.00390997, var=0, min=0.00390997, max=0.00390997
+  thetaVS2_r: mean=0.00247335, var=0, min=0.00247335, max=0.00247335
+  thetaCU_r: mean=0.00016018, var=0, min=0.00016018, max=0.00016018
+  thetaCT_r: mean=0, var=0, min=0, max=0
+  thetaCS_r: mean=0.00366146, var=0, min=0.00366146, max=0.00366146
+------------------------------------------------------------
+ST indices summary:
+
+  rVU_s: mean=0.129458, var=0, min=0.129458, max=0.129458
+  rVT_s: mean=0.000207341, var=0, min=0.000207341, max=0.000207341
+  rVS1_s: mean=0.129574, var=0, min=0.129574, max=0.129574
+  rVS2_s: mean=0.00518339, var=0, min=0.00518339, max=0.00518339
+  rCU_s: mean=0.000207017, var=0, min=0.000207017, max=0.000207017
+  rCT_s: mean=8.10233e-05, var=0, min=8.10233e-05, max=8.10233e-05
+  rCS_s: mean=0.129571, var=0, min=0.129571, max=0.129571
+  rVU_r: mean=0.12726, var=0, min=0.12726, max=0.12726
+  rVT_r: mean=0.000203632, var=0, min=0.000203632, max=0.000203632
+  rVS1_r: mean=0.12725, var=0, min=0.12725, max=0.12725
+  rVS2_r: mean=0.00509101, var=0, min=0.00509101, max=0.00509101
+  rCU_r: mean=0.000203673, var=0, min=0.000203673, max=0.000203673
+  rCT_r: mean=7.95983e-05, var=0, min=7.95983e-05, max=7.95983e-05
+  rCS_r: mean=0.127256, var=0, min=0.127256, max=0.127256
+  thetaVU_s: mean=0.103551, var=0, min=0.103551, max=0.103551
+  thetaVT_s: mean=0.000115076, var=0, min=0.000115076, max=0.000115076
+  thetaVS1_s: mean=0.00414112, var=0, min=0.00414112, max=0.00414112
+  thetaVS2_s: mean=0.00287646, var=0, min=0.00287646, max=0.00287646
+  thetaCU_s: mean=0.00011509, var=0, min=0.00011509, max=0.00011509
+  thetaCT_s: mean=3.40002e-22, var=0, min=3.40002e-22, max=3.40002e-22
+  thetaCS_s: mean=0.0041427, var=0, min=0.0041427, max=0.0041427
+  thetaVU_r: mean=0.0909194, var=0, min=0.0909194, max=0.0909194
+  thetaVT_r: mean=0.000101084, var=0, min=0.000101084, max=0.000101084
+  thetaVS1_r: mean=0.0036396, var=0, min=0.0036396, max=0.0036396
+  thetaVS2_r: mean=0.00252703, var=0, min=0.00252703, max=0.00252703
+  thetaCU_r: mean=0.000101087, var=0, min=0.000101087, max=0.000101087
+  thetaCT_r: mean=2.98726e-22, var=0, min=2.98726e-22, max=2.98726e-22
+  thetaCS_r: mean=0.00363886, var=0, min=0.00363886, max=0.00363886
+------------------------------------------------------------

@@ -1,0 +1,11 @@
+Bayesian Inference Log - 2026-01-22 00:51:06
+
+============================================================
+
+T_AV Posterior Summary:
+  Mean: 59.3355
+  Variance: 392.961
+  Min: -23.9123, Max: 142.464
+  95% HDI: [20.2373, 96.7935] (Width: 38.2781)
+  Nominal T_nom: 60
+  Mean deviation from T_nom: -0.664533
