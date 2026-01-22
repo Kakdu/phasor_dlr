@@ -2,12 +2,12 @@
 
 **Phasor-DLR** is a Python package for electrical phasor modelling and analysis, providing tools for:
 
-- **Error propagation** in electrical systems  
-- **Sobol sensitivity analysis**  
-- **Bayesian inference** for parameter estimation  
+- **Error propagation** in of measurement errors to conductor temperature estimation 
+- **Sobol sensitivity analysis** to show main sources of error
+- **Bayesian inference** for static state estimation  
 - **Unscented Kalman Filter (UKF)** for dynamic state estimation  
 
-This package is structured for reproducible simulations, plotting, and analysis of electrical phasor models.
+This package is structured for reproducible simulations, plotting, and analysis of the electrical phasor models.
 
 
 ---
