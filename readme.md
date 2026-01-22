@@ -1,6 +1,6 @@
 # phasor_dlr
 
-**Phasor-DLR** is a Python package for electrical phasor modeling and analysis, providing tools for:
+**Phasor-DLR** is a Python package for electrical phasor modelling and analysis, providing tools for:
 
 - **Error propagation** in electrical systems  
 - **Sobol sensitivity analysis**  
@@ -39,7 +39,7 @@ PYTHONPATH=src python scripts/ukf/run_filter.py
 
 Monte Carlo simulations
 
-Systematic error modeling
+Systematic error modelling
 
 Generates voltage, current, phase difference, average real power, power loss, and temperature distributions
 
@@ -55,7 +55,7 @@ A sweep over the power factor to show the major contribution to error at differe
 
 3. Bayesian Inference
 
-Supports prior specification and likelihood modeling
+Supports prior specification and likelihood modelling
 
 Posterior estimation with visualization of HDI and RMSE trends over number of measurements
 
