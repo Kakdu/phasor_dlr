@@ -43,6 +43,7 @@ PYTHONPATH=src python scripts/bayesian/compare_priors.py
 
 PYTHONPATH=src python scripts/ukf/run_filter.py
 
+
 ### Features
 
 1. Error Propagation
@@ -75,6 +76,7 @@ Full UKF implementation for phasor state estimation
 
 Plots for estimated states, Kalman gain, and smoothed temperature
 
+---
 
 ## Results and Plots
 
