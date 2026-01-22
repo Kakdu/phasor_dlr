@@ -9,50 +9,8 @@
 
 This package is structured for reproducible simulations, plotting, and analysis of electrical phasor models.
 
----
-
-## Project Structure
-
-phasor_dlr/
-├─ pyproject.toml
-├─ results/ # Simulation results and figures
-│ ├─ figures/
-│ │ ├─ bayesian/
-│ │ ├─ error_propagation/
-│ │ ├─ sobol/
-│ │ └─ ukf/
-│ └─ logs/
-├─ scripts/ # Scripts to run simulations
-│ ├─ bayesian/
-│ ├─ error_propagation/
-│ ├─ sobol/
-│ └─ ukf/
-└─ src/
-└─ phasor_dlr/
-├─ config/
-├─ estimation/
-│ ├─ bayesian/
-│ ├─ error_propagation/
-│ ├─ sobol/
-│ └─ ukf/
-├─ models/
-├─ plotting/
-├─ synthetic_data/
-└─ utils/
-
 
 ---
-
-## Installation
-
-Clone the repository and install with `pip`:
-
-bash
-git clone <repo_url>
-cd phasor_dlr
-pip install -e 
-
-This will install the package in editable mode.
 
 ## Usage
 
@@ -61,28 +19,19 @@ This will install the package in editable mode.
 The package contains standalone scripts for each type of analysis:
 
 Bayesian inference
-python scripts/bayesian/run_inference.py
-python scripts/bayesian/compare_priors.py
+PYTHONPATH=src python scripts/bayesian/run_inference.py
+PYTHONPATH=src python scripts/bayesian/compare_priors.py
 
 Error propagation / Monte Carlo
-python scripts/error_propagation/run_mc.py
-python scripts/error_propagation/sweep_mc.py
+PYTHONPATH=src python scripts/error_propagation/run_mc.py
+PYTHONPATH=src python scripts/error_propagation/sweep_mc.py
 
 Sobol sensitivity analysis
-python scripts/sobol/run_sobol.py
-python scripts/sobol/sweep_sobol.py
+PYTHONPATH=src python scripts/sobol/run_sobol.py
+PYTHONPATH=src python scripts/sobol/sweep_sobol.py
 
 Unscented Kalman Filter (UKF)
-python scripts/ukf/run_filter.py
-
-### Using as a Python package
-
-You can also import modules directly:
-
-from phasor_dlr.estimation.ukf import filtering, ukf_core, sigma_points
-from phasor_dlr.estimation.bayesian import models, priors, likelihoods
-from phasor_dlr.models import phasors, pi_model_dynamic, temperature
-from phasor_dlr.plotting import ukf as ukf_plot
+PYTHONPATH=src python scripts/ukf/run_filter.py
 
 ### Features
 
