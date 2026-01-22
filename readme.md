@@ -18,19 +18,29 @@ This package is structured for reproducible simulations, plotting, and analysis 
 
 The package contains standalone scripts for each type of analysis:
 
-Bayesian inference
-PYTHONPATH=src python scripts/bayesian/run_inference.py
-PYTHONPATH=src python scripts/bayesian/compare_priors.py
+1. Error propagation / Monte Carlo
 
-Error propagation / Monte Carlo
 PYTHONPATH=src python scripts/error_propagation/run_mc.py
+
 PYTHONPATH=src python scripts/error_propagation/sweep_mc.py
 
-Sobol sensitivity analysis
+
+2. Sobol sensitivity analysis
+
 PYTHONPATH=src python scripts/sobol/run_sobol.py
+
 PYTHONPATH=src python scripts/sobol/sweep_sobol.py
 
-Unscented Kalman Filter (UKF)
+
+3. Bayesian inference
+
+PYTHONPATH=src python scripts/bayesian/run_inference.py
+
+PYTHONPATH=src python scripts/bayesian/compare_priors.py
+
+
+4. Unscented Kalman Filter (UKF)
+
 PYTHONPATH=src python scripts/ukf/run_filter.py
 
 ### Features
