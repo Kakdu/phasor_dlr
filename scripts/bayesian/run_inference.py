@@ -5,6 +5,8 @@ import multiprocessing as mp
 import arviz as az
 import os
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from scipy.stats import skewnorm
 
 # Import bayesian model
 from phasor_dlr.estimation.bayesian.models import build_temperature_model
@@ -26,11 +28,13 @@ from phasor_dlr.plotting.logging import log_bayesian_run
 parser = argparse.ArgumentParser(description="Run power system script.")
 
 parser.add_argument("--f", type=float, default=50)
-parser.add_argument("--T_nom", type=float, default=60)
+parser.add_argument("--T_nom", type=float, default=50)
 parser.add_argument("--N", type=int, default=1)
 parser.add_argument("--seed", type=int, default=1)
 parser.add_argument("--hdi", type=int, default=95)
 parser.add_argument("--tP", type=int, default=0)
+parser.add_argument("--phys_informed", type=int, default=1)
+
 parser.add_argument("--CT_class", type=str, default="5P")
 parser.add_argument("--VT_class", type=str, default="0.2")
 
@@ -96,7 +100,8 @@ V_r_amp_meas, V_r_angle_meas, I_r_amp_meas, I_r_angle_meas, V_s_amp_meas, V_s_an
     args.N,
     accuracy_r,  # ErrorIntervals object for receiving end
     accuracy_s,  # ErrorIntervals object for sending end
-    seed=1
+    seed_r=1,
+    seed_s=2
 )
 
 
@@ -127,8 +132,8 @@ model = build_temperature_model(
     sigma_phiI=sigma_phiI,
     w=w,
     C=C,
-    tP=0,
-    phys_informed=1,
+    tP=args.tP,
+    phys_informed=args.phys_informed,
     seed=1234
 )
 
@@ -145,18 +150,81 @@ def main():
 
 
     az.summary(trace, var_names=["T_AV"])
-    labeller = az.labels.MapLabeller({
-        "T_AV": r"$T_{\mathrm{AV}}$"
-    })
+    fig, ax = plt.subplots(figsize=(6, 4))
 
-    az.plot_posterior(trace, var_names=["T_AV"], hdi_prob=args.hdi/100, labeller=labeller)
+    # Posterior of T_AV (no text annotations)
+    az.plot_posterior(
+        trace,
+        var_names=["T_AV"],
+        hdi_prob=args.hdi / 100,
+        point_estimate=None,   # removes mean/median
+        ax=ax,
+    )
+
+    for txt in ax.texts:
+        txt.set_visible(False)
+
+    # Label the posterior KDE manually
+    posterior_line = ax.lines[0]
+    posterior_line.set_label(r"$T_{\mathrm{AV}}$ posterior")
+    if args.N < 200 and args.phys_informed == 1:
+        # Dynamic bounds from posterior
+        T_min = np.min(trace.posterior["T_AV"].values)
+        T_max = np.max(trace.posterior["T_AV"].values)
+        margin = 0.05 * (T_max - T_min)  # 5% margin
+        x = np.linspace(T_min - margin, T_max + margin, 500)
+
+        # SkewNormal parameters
+        mu = 70
+        sigma = 10.0
+        alpha = -5
+
+        # scipy parameterization: a=alpha, loc=mu, scale=sigma
+        pdf = skewnorm.pdf(x, a=alpha, loc=mu, scale=sigma)
+
+        # Plot analytic SkewNormal
+        prior_line = ax.plot(
+            x,
+            pdf,
+            color="black",
+            linestyle="--",
+            linewidth=0.8,
+            label=r"$T_{\mathrm{EST}}$ prior",
+        )[0]
+
+    ax.set_xlabel("Degrees [$^\circ$C]")
+    ax.set_ylabel(None)
+    ax.legend()
+    title = "Posterior of $T_{\\mathrm{AV}}$ with $T_{\\mathrm{EST}}$ prior" if args.N < 200 and args.phys_informed == 1 else "Posterior of $T_{\\mathrm{AV}}$"
+    ax.set_title(title)
+    plt.tight_layout()
+
+    # --- Legend handle for HDI bar ---
+    hdi_handle = Line2D(
+        [0],
+        [0],
+        color="black",
+        linewidth=4,
+        label=f"{args.hdi:.0f}%" + " $T_{\\mathrm{AV}}$ HDI",
+    )
+
+    # Build legend
+    handles = [posterior_line, hdi_handle]
+    if args.N < 200 and args.phys_informed == 1:
+        handles.append(prior_line)
+
+    ax.legend(handles=handles)
 
     folder = "results/figures/bayesian"
     os.makedirs(folder, exist_ok=True)
     plt.savefig(os.path.join(folder, "temperature_posterior.png"), dpi=300)
 
+    plt.savefig(os.path.join(folder, "temperature_posterior.png"), dpi=300)
+    plt.close()
+
     log_bayesian_run(trace, T_nom=args.T_nom, folder="results/logs", filename_prefix="bayes_run")
 
 if __name__ == "__main__":
     main()
+
 

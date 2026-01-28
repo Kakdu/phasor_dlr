@@ -14,7 +14,7 @@ from phasor_dlr.config.defaults import condParameters
 from phasor_dlr.config.standards import ErrorIntervals, make_error_intervals
 
 # Import plotting and logging modules
-from phasor_dlr.plotting.uncertainty import plot_kde, plot_sent_received
+from phasor_dlr.plotting.uncertainty import plot_kde, plot_sent_received, styles
 from phasor_dlr.plotting.logging import log_monte_carlo_run
 
 
@@ -33,7 +33,7 @@ parser.add_argument("--cond", type=str, default="bohus")
 parser.add_argument("--VrAmp", type=float, default=140000.0)
 parser.add_argument("--VrAngle", type=float, default=0.8)
 parser.add_argument("--IrAmp", type=float, default=None)
-parser.add_argument("--T_nom", type=float, default=60)
+parser.add_argument("--T_nom", type=float, default=50)
 
 parser.add_argument("--seed", type=int, default=1)
 parser.add_argument("--NSAMP", type=int, default=500_000)
@@ -131,7 +131,7 @@ I_AC = 0.5 * (samples_s["I_amp"] + samples_r["I_amp"])
 
 T, T_max, T_avg = temperature_distribution(P_loss, I_AC, cond=condParam)
 
-
+print("====== Calculations complete. Plotting Distributions =======")
 # -------------------------------
 # Plotting
 # -------------------------------
@@ -142,36 +142,39 @@ if args.M > 1:
     filename = "distribution_T_AV_mean"
     plot_kde(
         T_avg,
-        title="Distribution of mean temperature",
+        title="Distribution of Mean Conductor Temperature",
         xlabel="Temperature",
         style=None,
         confidence_interval=None,
         show=False,
         filename=os.path.join(folder, filename),
+        fit_normal=False
     )
 else:
     filename = "distribution_T_AV"
     plot_kde(
         T,
-        title="Distribution of conductor temperature",
+        title="Distribution of Conductor Temperature",
         xlabel="Temperature [C]",
         style=None,
         confidence_interval=None,
         show=False,
         filename=os.path.join(folder, filename),
+        fit_normal=False
     )
 
-plot_sent_received(samples_r, samples_s, folder=folder)
-
 plot_kde(
-        P_loss,
-        title="Distribution of conductor temperature",
-        xlabel="Temperature [C]",
-        style=None,
+        P_loss / 1e6,
+        title="Distribution of Power Loss",
+        xlabel="Power [MW]",
+        style=styles["combined"],
         confidence_interval=None,
         show=False,
         filename=os.path.join(folder, "power_loss"),
+        fit_normal=False
     )
+
+plot_sent_received(samples_r, samples_s, folder=folder)
 
 
 # -------------------------------

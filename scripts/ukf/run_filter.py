@@ -4,6 +4,8 @@ import os
 from scipy.stats import norm
 from dataclasses import dataclass
 
+import argparse
+
 # Import math functions
 from phasor_dlr.utils.math import combined_uniforms_sigma
 
@@ -11,7 +13,9 @@ from phasor_dlr.utils.math import combined_uniforms_sigma
 from phasor_dlr.config.defaults import condParameters
 from phasor_dlr.config.standards import ErrorIntervals, make_error_intervals
 
-import argparse
+# Import noise sampling
+from phasor_dlr.synthetic_data.noise import apply_error_to_phasors
+
 
 DEFAULTS = {
     "min": 100,
@@ -155,17 +159,26 @@ V_s_true_amp, V_s_true_angle, I_s_true_amp, I_s_true_angle = pi_model_sending_ph
 received_angle_diff_true = (V_r_true.angle - I_r_true.angle)
 sent_angle_diff_true = (V_s_true_angle - I_s_true_angle)
 
-# --------------------------
-# Noisy measurements
-# --------------------------
+# -------------------------------
+# Apply measurement errors using previously defined functions
+# -------------------------------
 
-V_r_meas = V_r_true.amplitude * (1 + np.random.randn(steps)*sigma_V)
-I_r_meas = I_r_true.amplitude * (1 + np.random.randn(steps)*sigma_I)
-V_s_meas = V_s_true_amp * (1 + np.random.randn(steps)*sigma_V)
-I_s_meas = I_s_true_amp * (1 + np.random.randn(steps)*sigma_I)
+# Receiving end
+V_r_meas, V_r_angle_meas, I_r_meas, I_r_angle_meas = apply_error_to_phasors(
+    V_r_true.amplitude, V_r_true.angle, I_r_true.amplitude, I_r_true.angle,
+    accuracy_r, steps, seed=1
+)
 
-sent_angle_meas = sent_angle_diff_true + np.random.randn(steps)*np.sqrt(sigma_phiV**2 + sigma_phiI**2)
-received_angle_meas = received_angle_diff_true + np.random.randn(steps)*np.sqrt(sigma_phiV**2 + sigma_phiI**2)
+# Sending end
+V_s_meas, V_s_angle_meas, I_s_meas, I_s_angle_meas = apply_error_to_phasors(
+    V_s_true_amp, V_s_true_angle, I_s_true_amp, I_s_true_angle,
+    accuracy_s, steps, seed=2
+)
+
+
+sent_angle_meas = V_s_angle_meas - I_s_angle_meas
+received_angle_meas = V_r_angle_meas - I_r_angle_meas
+
 
 T_meas = np.array([T_from_measurements(
     phasor(V_r_meas[k],0.0), phasor(I_r_meas[k],sent_angle_meas[k]),
@@ -256,8 +269,8 @@ for k in range(steps):
     I_s_est_list[k] = I_s_amp_i
     sent_angle_est_list[k] = V_s_angle_i - I_s_angle_i
     sigma_list[k] = np.sqrt(np.diag(P))
-    if k % (steps // 10) == 0:
-        print(f'{100 * k / steps}% complete')
+    if (k + 1) % (steps // 10) == 0:
+        print(f'{100 * (k + 1) / steps}% complete')
 
 
 rmse_T = np.sqrt(np.mean((T_est_list - T_true)**2))
@@ -304,6 +317,40 @@ def save_plot(true, est, sigma, ylabel, filename, steps_psec, confidence=95, col
     plt.legend()
     plt.savefig(os.path.join(folder, filename), dpi=300)
     plt.close()
+
+def plot_true_only(true, ylabel, filename, steps_psec, color='black', label='true'):
+    """
+    Plot only the true/nominal signal over time.
+
+    Parameters
+    ----------
+    true : array-like
+        True/nominal signal to plot.
+    ylabel : str
+        Label for y-axis.
+    filename : str
+        Output file name (saved in `folder`).
+    steps_psec : int
+        Number of steps per second (for time conversion).
+    color : str
+        Line color.
+    label : str
+        Label for the legend.
+    """
+    t_min = np.arange(len(true)) / (60 * steps_psec)
+
+    plt.figure()
+    plt.plot(t_min, true, color=color, linewidth=0.8, label=label)
+    plt.xlabel('Time [minutes]')
+    plt.ylabel(ylabel)
+    plt.ylim(40, 70)
+    plt.title(f'Nominal Temperature')
+    plt.legend()
+    plt.grid(False)
+    plt.tight_layout()
+    plt.savefig(os.path.join(folder, filename), dpi=300)
+    plt.close()
+
 def average_per_second(signal, steps_psec):
     """
     Block-average a signal over one-second intervals.
@@ -409,6 +456,22 @@ labels = [r'$T_{\mathrm{AV}}$', r'$\nu^{(r)}$', r'$\iota^{(r)}$', r'$\phi^{(r)}$
 colors = ['tab:blue', 'tab:green', 'tab:green', 'tab:orange', 'tab:orange']
 linestyles = ['-', '-', ':', '-', ':']
 
+# Temperature nominal
+if args.curr * args.conv == 1:
+    label='Combination'
+elif args.curr == 1:
+    label='Current'
+elif args.conv == 1:
+    label='Convection'
+else:
+    label='Baseline'
+plot_true_only(
+    T_true,
+    ylabel=r'Temperature [$^\circ$C]',
+    filename='temperature_nominal.png',
+    steps_psec=steps_psec,
+    label=label
+)
 
 plt.figure()
 for i in range(n):

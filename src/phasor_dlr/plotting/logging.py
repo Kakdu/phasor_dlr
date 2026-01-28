@@ -2,6 +2,7 @@ import os
 import arviz as az
 from datetime import datetime
 import numpy as np
+from scipy.stats import gaussian_kde
 
 def log_monte_carlo_run(samples_r, samples_s, folder="results/logs", filename_prefix="mc_run"):
     """
@@ -134,13 +135,20 @@ def log_bayesian_run(trace, T_nom=None, folder="results/logs", filename_prefix="
     var_val = np.var(samples)
     min_val = np.min(samples)
     max_val = np.max(samples)
+
+    kde = gaussian_kde(samples)
+    x_grid = np.linspace(min_val, max_val, 2000)
+    mode_val = x_grid[np.argmax(kde(x_grid))]
     
     hdi_95 = az.hdi(trace, var_names=["T_AV"], hdi_prob=0.95)["T_AV"].values
     hdi_width = 0.5 * (hdi_95[1] - hdi_95[0])
     
+    rmse_val = np.sqrt(np.mean((samples - T_nom)**2))
+
     lines = [
         f"T_AV Posterior Summary:",
         f"  Mean: {mean_val:.6g}",
+        f"  Mode (KDE): {mode_val:.6g}",
         f"  Variance: {var_val:.6g}",
         f"  Min: {min_val:.6g}, Max: {max_val:.6g}",
         f"  95% HDI: [{hdi_95[0]:.6g}, {hdi_95[1]:.6g}] (Width: {hdi_width:.6g})",
@@ -149,6 +157,7 @@ def log_bayesian_run(trace, T_nom=None, folder="results/logs", filename_prefix="
     if T_nom is not None:
         lines.append(f"  Nominal T_nom: {T_nom:.6g}")
         lines.append(f"  Mean deviation from T_nom: {mean_val - T_nom:.6g}")
+        lines.append(f"  RMSE w.r.t. T_nom: {rmse_val:.6g}")
     
     log_lines.extend(lines)
     

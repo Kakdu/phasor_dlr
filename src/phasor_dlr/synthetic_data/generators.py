@@ -8,7 +8,8 @@ def generate_static_measurements(
     N,
     STANDARDS_r,  # ErrorIntervals object for receiving end
     STANDARDS_s,  # ErrorIntervals object for sending end
-    seed=1
+    seed_r=1,
+    seed_s=2,
 ):
     """
     Generate N samples of phasor measurements with measurement errors applied.
@@ -25,8 +26,10 @@ def generate_static_measurements(
         Number of samples
     STANDARDS_r, STANDARDS_s : ErrorIntervals
         Error intervals for receiving and sending ends
-    seed : int
-        Random seed
+    seed_r : int
+        Random seed for receiving end
+    seed_s : int
+        Random seed for sending end, should not be equivalent to seed_r
 
     Returns
     -------
@@ -34,7 +37,6 @@ def generate_static_measurements(
     V_s_amp_n, V_s_angle_n, I_s_amp_n, I_s_angle_n : np.ndarray
         Arrays of length N with measurement errors applied
     """
-    rng = np.random.default_rng(seed)
 
     # -------------------------------
     # 1) Noise-free receiving-end phasors arrays
@@ -60,24 +62,22 @@ def generate_static_measurements(
     # Receiving end
     V_r_amp_n, V_r_angle_n, I_r_amp_n, I_r_angle_n = apply_error_to_phasors(
         V_r_amp_arr, V_r_angle_arr, I_r_amp_arr, I_r_angle_arr,
-        deepcopy(STANDARDS_r), N, seed
+        deepcopy(STANDARDS_r), N, seed_r
     )
 
     # Sending end
     V_s_amp_n, V_s_angle_n, I_s_amp_n, I_s_angle_n = apply_error_to_phasors(
         V_s_amp_arr, V_s_angle_arr, I_s_amp_arr, I_s_angle_arr,
-        deepcopy(STANDARDS_s), N, seed
+        deepcopy(STANDARDS_s), N, seed_s
     )
 
     return (
         V_r_amp_n, V_r_angle_n, I_r_amp_n, I_r_angle_n,
         V_s_amp_n, V_s_angle_n, I_s_amp_n, I_s_angle_n,
         V_s_amp_arr[0], V_s_angle_arr[0], I_s_amp_arr[0], I_s_angle_arr[0],
-
     )
 
 
-import numpy as np
 
 def generate_synthetic_data(
     steps,

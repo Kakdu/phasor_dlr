@@ -27,7 +27,7 @@ def phys_priors(V_r_nom, I_r_nom, V_r_angle_nom, I_r_angle_nom, sigma_phiV, sigm
     priors = {}
 
     # Latent temperature
-    priors["T_model"] = pm.Normal("T_model", mu=60, sigma=20.0)
+    priors["T_model"] = pm.SkewNormal("T_model", mu=70, sigma=10.0, alpha=-5)
 
     # Receiving-end phasor priors
     priors["Vr_true"] = pm.Uniform("Vr_true", lower=0.95 * V_r_nom, upper=1.05 * V_r_nom)

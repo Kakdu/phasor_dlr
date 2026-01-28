@@ -30,7 +30,7 @@ parser.add_argument("--cond", type=str, default="bohus")
 
 parser.add_argument("--VrAmp", type=float, default=140000.0)
 parser.add_argument("--VrAngle", type=float, default=0.8)
-parser.add_argument("--T_nom", type=float, default=60)
+parser.add_argument("--T_nom", type=float, default=50)
 
 parser.add_argument("--seed", type=int, default=1)
 parser.add_argument("--NSAMP", type=int, default=100_000)
