@@ -25,8 +25,8 @@ BASE_LIMITS = {
     },
     "r_V": {
         "VU": (-0.0004, 0.0004),
-        "VS1": (-0.0005, 0),
-        "VS2": (-0.01, 0.01),
+        "VSU": (-0.01, 0.01),
+        "VSO": (-0.0005, 0),
     },
     "theta_I": {
         "CU": (-2, 2),
@@ -34,8 +34,8 @@ BASE_LIMITS = {
     },
     "theta_V": {
         "VU": (-2, 2),
-        "VS1": (0, 0),
-        "VS2": (-12, 12),
+        "VSU": (-12, 12),
+        "VSO": (0, 0),
     },
 }
 
@@ -79,36 +79,86 @@ def clip_zero_interval(interval, eps=1e-12):
         return (a - eps, b + eps)
     return (a, b)
 
-# ------------------------------
-# Main factory function
-# ------------------------------
-def make_error_intervals(CT_class: str, VT_class: str) -> ErrorIntervals:
-    """Return fully processed error intervals given CT and VT classes."""
+def scale_interval(interval, eta):
+    """Scale interval by factor 1/eta."""
+    if eta == 0:
+        raise ValueError("eta must be non-zero")
+    a, b = interval
+    return (a / eta, b / eta)
+
+def make_error_intervals(CT_class: str,
+                         VT_class: str,
+                         eta: float = 1.0) -> ErrorIntervals:
+    """
+    Return fully processed error intervals given CT and VT classes.
+
+    All intervals are scaled by factor 1/eta.
+    """
     
+    # --------------------------
     # Get CT/VT limits
+    # --------------------------
     ct_r, ct_t = CT_LIMITS[CT_class]["r"], CT_LIMITS[CT_class]["theta"]
     vt_r, vt_t = VT_LIMITS[VT_class]["r"], VT_LIMITS[VT_class]["theta"]
     
-    # Max envelopes for other tuples
+    # --------------------------
+    # Max envelopes for others
+    # --------------------------
     max_r = (min(ct_r[0], vt_r[0]), max(ct_r[1], vt_r[1]))
     max_t = (min(ct_t[0], vt_t[0]), max(ct_t[1], vt_t[1]))
     
-    # Compose linear (r) intervals
-    r_I = {"CT": ct_r, **{k: constrain(v, max_r) for k, v in BASE_LIMITS["r_I"].items()}}
-    r_V = {"VT": vt_r, **{k: constrain(v, max_r) for k, v in BASE_LIMITS["r_V"].items()}}
+    # --------------------------
+    # Compose linear intervals
+    # --------------------------
+    r_I = {
+        "CT": ct_r,
+        **{k: constrain(v, max_r) for k, v in BASE_LIMITS["r_I"].items()}
+    }
     
-    # Compose angular (theta) intervals in minutes
-    theta_I_min = {"CT": ct_t, **{k: constrain(v, max_t) for k, v in BASE_LIMITS["theta_I"].items()}}
-    theta_V_min = {"VT": vt_t, **{k: constrain(v, max_t) for k, v in BASE_LIMITS["theta_V"].items()}}
+    r_V = {
+        "VT": vt_r,
+        **{k: constrain(v, max_r) for k, v in BASE_LIMITS["r_V"].items()}
+    }
     
+    # --------------------------
+    # Angular intervals (minutes)
+    # --------------------------
+    theta_I_min = {
+        "CT": ct_t,
+        **{k: constrain(v, max_t) for k, v in BASE_LIMITS["theta_I"].items()}
+    }
+    
+    theta_V_min = {
+        "VT": vt_t,
+        **{k: constrain(v, max_t) for k, v in BASE_LIMITS["theta_V"].items()}
+    }
+    
+    # --------------------------
     # Convert to radians
+    # --------------------------
     theta_I = minToRad_dict(theta_I_min)
     theta_V = minToRad_dict(theta_V_min)
     
+    # --------------------------
+    # Scale all intervals by 1/eta
+    # --------------------------
+    r_I = {k: scale_interval(v, eta) for k, v in r_I.items()}
+    r_V = {k: scale_interval(v, eta) for k, v in r_V.items()}
+    theta_I = {k: scale_interval(v, eta) for k, v in theta_I.items()}
+    theta_V = {k: scale_interval(v, eta) for k, v in theta_V.items()}
+    
+    # --------------------------
     # Clip zero-length intervals
+    # --------------------------
     r_I = {k: clip_zero_interval(v) for k, v in r_I.items()}
     r_V = {k: clip_zero_interval(v) for k, v in r_V.items()}
     theta_I = {k: clip_zero_interval(v) for k, v in theta_I.items()}
     theta_V = {k: clip_zero_interval(v) for k, v in theta_V.items()}
     
-    return ErrorIntervals(r_I=r_I, r_V=r_V, theta_I=theta_I, theta_V=theta_V)
+    return ErrorIntervals(
+        r_I=r_I,
+        r_V=r_V,
+        theta_I=theta_I,
+        theta_V=theta_V
+    )
+

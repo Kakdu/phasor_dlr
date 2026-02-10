@@ -36,6 +36,7 @@ def plot_kde(
     filename=None,
     interval=None,
     fit_normal=True,
+    label="KDE"
 ):
     """
     Plot KDE of samples with optional confidence interval and custom style.
@@ -72,7 +73,7 @@ def plot_kde(
         color=style.get("color", "C0"),
         linestyle=style.get("linestyle", "-"),
         linewidth=style.get("linewidth", 2),
-        label="KDE",
+        label=label,
     )
 
     # Normal fit
@@ -296,22 +297,22 @@ def plot_sent_received(samples_r, samples_s, folder="figures", confidence_interv
     plot_kdes(
         [samples_r["I_amp"].flatten(), samples_s["I_amp"].flatten()],
         labels=["Received", "Sent"],
-        title="Current amplitude",
+        title="",
         xlabel="Current [A]",
         styles=[styles["magnitude_2"], styles["magnitude"]],
         confidence_interval=confidence_interval,
-        filename=f"{folder}/current_amplitude.png",
+        filename=f"{folder}/KDEsCurrent.png",
     )
 
     # --- 2. Voltage amplitude ---
     plot_kdes(
         [samples_r["V_amp"].flatten() / 1e3, samples_s["V_amp"].flatten() / 1e3],
         labels=["Received", "Sent"],
-        title="Voltage amplitude",
+        title="",
         xlabel="Voltage [kV]",
         styles=[styles["magnitude_2"], styles["magnitude"]],
         confidence_interval=confidence_interval,
-        filename=f"{folder}/voltage_amplitude.png",
+        filename=f"{folder}/KDEsVoltage.png",
     )
 
     # --- 3. Phase difference (V - I) ---
@@ -319,28 +320,28 @@ def plot_sent_received(samples_r, samples_s, folder="figures", confidence_interv
         [(samples_r["V_theta"] - samples_r["I_theta"]).flatten(),
          (samples_s["V_theta"] - samples_s["I_theta"]).flatten()],
         labels=["Received", "Sent"],
-        title="Phase difference (V - I)",
+        title="",
         xlabel="Phase difference [rad]",
         styles=[styles["angle_2"], styles["angle"]],
         confidence_interval=confidence_interval,
-        filename=f"{folder}/phase_difference.png",
+        filename=f"{folder}/KDEsPhaseDiff.png",
     )
 
-    # --- 4. Active power (S_samples) ---
+    # --- 4. Active power ---
     plot_kdes(
         [samples_r["S_samples"].flatten() / 1e6, samples_s["S_samples"].flatten() / 1e6],
         labels=["Received", "Sent"],
-        title="Active Real Power",
+        title="",
         xlabel="Power [MW]",
         styles=[styles["combined_2"], styles["combined"]],
         confidence_interval=confidence_interval,
-        filename=f"{folder}/S_samples.png",
+        filename=f"{folder}/KDEsPower.png",
     )
 
     print(f"All plots saved to folder: {folder}")
 
 
-def plot_temperature_variance(I_r_sweep, temp_variance, folder="results/figures/error_propagation", filename="variance_over_current"):
+def plot_temperature_variance(I_r_sweep, temp_variance, folder="results/figures/error_propagation", filename="std_over_current", title=""):
     """
     Plot temperature standard deviation vs received current for multiple conductors.
 
@@ -383,13 +384,13 @@ def plot_temperature_variance(I_r_sweep, temp_variance, folder="results/figures/
                 zorder=1,
             )
 
-        # Inside operating range (blue)
+        # Inside operating range
         if np.any(inside_mask):
             plt.plot(
                 I_r[inside_mask],
                 var_T[inside_mask],
                 color="tab:blue",
-                lw=2,
+                lw=4,
                 linestyle="-",
                 label="Operational Currents" if cond_name == "gota" else "",
                 zorder=2,
@@ -399,7 +400,7 @@ def plot_temperature_variance(I_r_sweep, temp_variance, folder="results/figures/
     plt.ylabel(
         "Temperature Standard Deviation $\\mathrm{Std}(T_{\\mathrm{AV}})$ [$^\circ$C]"
     )
-    plt.title("Temperature Standard Deviation vs Current")
+    plt.title(title)
     plt.xscale("log")
     plt.yscale("log")
     plt.grid(False)

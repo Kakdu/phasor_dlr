@@ -7,11 +7,11 @@ from matplotlib.patches import Patch
 def _build_plot_labels(problem):
     """
     Build x_positions, LaTeX labels, and bar_colors from problem['names'],
-    preserving both type (r/theta) and source/receiver (_s/_r) distinction.
+    preserving both type (r/theta) and send/receiver (_s/_r) distinction.
     """
     names_plain = problem["names"]
 
-    # Detect groups of consecutive same type and source/receiver
+    # Detect groups of consecutive same type and send/receiver
     groups = []
     current_group = []
     current_type_sr = None
@@ -28,7 +28,7 @@ def _build_plot_labels(problem):
             vtype = "r"
             sub = base[1:]  # e.g. "VU"
 
-        type_sr = f"{vtype}_{sr}"  # combine type + source/receiver
+        type_sr = f"{vtype}_{sr}"  # combine type + send/receiver
 
         if type_sr != current_type_sr:
             if current_group:
@@ -74,14 +74,14 @@ def _build_plot_labels(problem):
     return np.array(x_positions), x_labels_grouped, bar_colors
 
 
-def plot_sobol_first_order(S1, S1_conf, problem, filename):
+def plot_sobol_first_order(S1, S1_conf, problem, filename, title=""):
     x_positions, x_labels_grouped, bar_colors = _build_plot_labels(problem)
 
     plt.figure(figsize=(8, 6))
     plt.bar(x_positions, S1, yerr=S1_conf, capsize=4, color=bar_colors, edgecolor="black")
     plt.xticks(x_positions, x_labels_grouped, rotation=45, ha='right')
     plt.ylabel("S1")
-    plt.title("First-order Sobol indices")
+    plt.title(title)
     legend_elements = [
         Patch(facecolor="tab:green", edgecolor="black", label=r"$r$ variables"),
         Patch(facecolor="tab:orange", edgecolor="black", label=r"$\theta$ variables")
@@ -92,14 +92,14 @@ def plot_sobol_first_order(S1, S1_conf, problem, filename):
     plt.close()
 
 
-def plot_sobol_total_effect(ST, ST_conf, problem, filename):
+def plot_sobol_total_effect(ST, ST_conf, problem, filename, title=""):
     x_positions, x_labels_grouped, bar_colors = _build_plot_labels(problem)
 
     plt.figure(figsize=(8, 6))
     plt.bar(x_positions, ST, yerr=ST_conf, capsize=4, color=bar_colors, edgecolor="black")
     plt.xticks(x_positions, x_labels_grouped, rotation=45, ha='right')
     plt.ylabel("ST")
-    plt.title("Total-effect Sobol indices")
+    plt.title(title)
     legend_elements = [
         Patch(facecolor="tab:green", edgecolor="black", label=r"$r$ variables"),
         Patch(facecolor="tab:orange", edgecolor="black", label=r"$\theta$ variables")
@@ -110,15 +110,91 @@ def plot_sobol_total_effect(ST, ST_conf, problem, filename):
     plt.close()
 
 
-def plot_sobol_second_order(S2, problem, filename):
-    _, x_labels_grouped, _ = _build_plot_labels(problem)
+def plot_sobol_second_order(S2, problem, filename_base, title=""):
+    _, x_labels, _ = _build_plot_labels(problem)
+    names = problem["names"]
 
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(S2, annot=False, cmap="Reds", xticklabels=x_labels_grouped, yticklabels=x_labels_grouped)
-    plt.title("Second-order Sobol indices")
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
+    # -------------------------------------------------
+    # Identify indices by variable TYPE only
+    # -------------------------------------------------
+    idx_r = []
+    idx_theta = []
+
+    for i, name in enumerate(names):
+        base, _ = name.split("_")
+        if base.startswith("theta"):
+            idx_theta.append(i)
+        else:
+            idx_r.append(i)
+
+    labels_r = [x_labels[i] for i in idx_r]
+    labels_theta = [x_labels[i] for i in idx_theta]
+
+    # -------------------------------------------------
+    # Global color scale (shared across all plots)
+    # -------------------------------------------------
+    vmin = np.nanmin(S2)
+    vmax = np.nanmax(S2)
+
+    def plot_heatmap(matrix, xlbls, ylbls, title, fname):
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(
+            matrix,
+            annot=False,
+            cmap="Reds",
+            xticklabels=xlbls,
+            yticklabels=ylbls,
+            vmin=vmin,
+            vmax=vmax,
+        )
+        plt.title(title)
+        plt.tight_layout()
+        plt.savefig(fname, dpi=300)
+        plt.close()
+
+    # -------------------------------------------------
+    # 1) Full matrix
+    # -------------------------------------------------
+    plot_heatmap(
+        S2,
+        x_labels,
+        x_labels,
+        title,
+        filename_base,
+    )
+
+    # -------------------------------------------------
+    # 2) r–r interactions
+    # -------------------------------------------------
+    plot_heatmap(
+        S2[np.ix_(idx_r, idx_r)],
+        labels_r,
+        labels_r,
+        title,
+        filename_base.replace(".png", "_rr.png"),
+    )
+
+    # -------------------------------------------------
+    # 3) θ–θ interactions
+    # -------------------------------------------------
+    plot_heatmap(
+        S2[np.ix_(idx_theta, idx_theta)],
+        labels_theta,
+        labels_theta,
+        title,
+        filename_base.replace(".png", "_thetatheta.png"),
+    )
+
+    # -------------------------------------------------
+    # 4) r–θ interactions
+    # -------------------------------------------------
+    plot_heatmap(
+        S2[np.ix_(idx_r, idx_theta)],
+        labels_theta,
+        labels_r,
+        title,
+        filename_base.replace(".png", "_rtheta.png"),
+    )
 
 
 
@@ -128,7 +204,8 @@ import matplotlib.pyplot as plt
 def plot_sobol_sweep(cos_angles, S1_r_sum, S1_r_conf,
                       S1_theta_sum, S1_theta_conf,
                       S1_inter_sum, S1_inter_conf,
-                      save_path="Sobol/sobol_S1_sum_vs_cos_angle.png"):
+                      save_path="Sobol/sobol_S1_sum_vs_cos_angle.png",
+                      title=""):
     """
     Plot the first-order Sobol index sweep vs cos(angle) with error bars.
     
@@ -158,7 +235,7 @@ def plot_sobol_sweep(cos_angles, S1_r_sum, S1_r_conf,
     
     plt.xlabel(r"$\cos(\phi^{(r)})$")
     plt.ylabel("Summed first-order Sobol index")
-    plt.title("First-order Sobol sensitivity vs power factor")
+    plt.title(title)
     plt.legend()
     plt.grid(False)
     plt.tight_layout()

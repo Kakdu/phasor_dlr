@@ -93,7 +93,7 @@ for k, V_r_angle in enumerate(V_r_angles):
     )
 
     # Evaluate T_A
-    Y_model = T_A_model(param_values, params)
+    Y_model = T_A_model(param_values, params, problem)
 
     # Sobol first-order analysis
     Si = sobol.analyze(problem, Y_model, print_to_console=False, calc_second_order=False)

@@ -1,6 +1,18 @@
 import numpy as np
+from dataclasses import fields
 from SALib.sample import sobol as sl
 from phasor_dlr.config.standards import make_error_intervals
+
+def iter_error_intervals(error_intervals):
+    """
+    Yields (var_type, subkey, interval_dict) tuples
+    e.g. ("r", "VU", {...})
+    """
+    for f in fields(error_intervals):
+        var_type, _ = f.name.split("_", 1)  # "r" or "theta"
+        interval_dict = getattr(error_intervals, f.name)
+        for subkey, interval in interval_dict.items():
+            yield var_type, subkey, interval
 
 def flatten_error_intervals(error_intervals):
     """
@@ -34,46 +46,46 @@ def build_names(error_intervals):
     )
     return names_plain
 
-def generate_sobol_samples_from_standards(CT_class, VT_class, N_samples, calc_second_order):
-    # 1) Build base error intervals
+def generate_sobol_samples_from_standards(
+    CT_class,
+    VT_class,
+    N_samples,
+    calc_second_order,
+):
     error_intervals = make_error_intervals(CT_class, VT_class)
 
-    # 2) Build ordered intervals for Sobol: r_s, r_r, theta_s, theta_r
-    # r_I: CU, CS
-    # r_V: VU, VS1, VS2
-    intervals_r_s = list(error_intervals.r_I.values()) + list(error_intervals.r_V.values())
-    intervals_r_r = intervals_r_s.copy()  # duplicate for received
+    bounds = []
+    names = []
 
-    intervals_theta_s = list(error_intervals.theta_I.values()) + list(error_intervals.theta_V.values())
-    intervals_theta_r = intervals_theta_s.copy()
+    # Explicit semantic ordering
+    for var_type in ["r", "theta"]:
+        for suffix in ["_s", "_r"]:
+            for f in fields(error_intervals):
+                f_var_type, _ = f.name.split("_", 1)
+                if f_var_type != var_type:
+                    continue
 
-    all_intervals = intervals_r_s + intervals_r_r + intervals_theta_s + intervals_theta_r
+                interval_dict = getattr(error_intervals, f.name)
 
-    # 3) Build names plain (matching the old order)
-    names_plain = []
-    # Magnitudes
-    for suffix in ["_s", "_r"]:
-        for k in ["VU", "VT", "VS1", "VS2", "CU", "CT", "CS"]:
-            if k in error_intervals.r_V:
-                names_plain.append(f"r{k}{suffix}")
-            elif k in error_intervals.r_I:
-                names_plain.append(f"r{k}{suffix}")
-    # Angles
-    for suffix in ["_s", "_r"]:
-        for k in ["VU", "VT", "VS1", "VS2", "CU", "CT", "CS"]:
-            if k in error_intervals.theta_V:
-                names_plain.append(f"theta{k}{suffix}")
-            elif k in error_intervals.theta_I:
-                names_plain.append(f"theta{k}{suffix}")
+                # IMPORTANT: stable key order
+                for subkey in sorted(interval_dict.keys()):
+                    bounds.append(interval_dict[subkey])
+                    names.append(f"{var_type}{subkey}{suffix}")
 
-    # 4) Build SALib problem
+    # Safety checks
+    assert len(bounds) == len(names)
+    assert len(set(names)) == len(names)
+
     problem = {
-        "num_vars": len(all_intervals),
-        "names": names_plain,
-        "bounds": all_intervals
+        "num_vars": len(bounds),
+        "names": names,
+        "bounds": bounds,
     }
 
-    # 5) Generate Sobol samples
-    param_values = sl.sample(problem, N_samples, calc_second_order=calc_second_order)
+    param_values = sl.sample(
+        problem,
+        N_samples,
+        calc_second_order=calc_second_order,
+    )
 
     return param_values, problem, error_intervals

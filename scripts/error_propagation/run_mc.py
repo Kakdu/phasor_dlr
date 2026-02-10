@@ -139,10 +139,10 @@ folder = "results/figures/error_propagation"
 os.makedirs(folder, exist_ok=True)
 
 if args.M > 1:
-    filename = "distribution_T_AV_mean"
+    filename = "KDETemp"
     plot_kde(
         T_avg,
-        title="Distribution of Mean Conductor Temperature",
+        title="",
         xlabel="Temperature",
         style=None,
         confidence_interval=None,
@@ -151,27 +151,29 @@ if args.M > 1:
         fit_normal=False
     )
 else:
-    filename = "distribution_T_AV"
+    filename = "KDETemp"
     plot_kde(
         T,
-        title="Distribution of Conductor Temperature",
+        title="",
         xlabel="Temperature [C]",
         style=None,
         confidence_interval=None,
         show=False,
         filename=os.path.join(folder, filename),
-        fit_normal=False
+        fit_normal=False,
+        label=""
     )
 
 plot_kde(
         P_loss / 1e6,
-        title="Distribution of Power Loss",
+        title="",
         xlabel="Power [MW]",
         style=styles["combined"],
         confidence_interval=None,
         show=False,
-        filename=os.path.join(folder, "power_loss"),
-        fit_normal=False
+        filename=os.path.join(folder, "KDEPowerLoss"),
+        fit_normal=False,
+        label=""
     )
 
 plot_sent_received(samples_r, samples_s, folder=folder)
@@ -180,4 +182,4 @@ plot_sent_received(samples_r, samples_s, folder=folder)
 # -------------------------------
 # Logs
 # -------------------------------
-log_monte_carlo_run(samples_r, samples_s, folder="results/logs", filename_prefix="error_propagation")
+log_monte_carlo_run(samples_r, samples_s, condParam, folder="results/logs", filename_prefix="error_propagation")

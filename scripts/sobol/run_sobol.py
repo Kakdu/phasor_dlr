@@ -42,7 +42,7 @@ def parse_args():
     parser.add_argument("--VT_class", type=str, default="0.2", help="VT accuracy class")
 
     # Number of Sobol samples
-    parser.add_argument("--N_samples", type=int, default=2**10, help="Number of Sobol samples")
+    parser.add_argument("--N_samples", type=int, default=15, help="log2 of number of Sobol samples")
 
     # Frequency and nominal temperature
     parser.add_argument("--f", type=float, default=50, help="System frequency [Hz]")
@@ -50,9 +50,9 @@ def parse_args():
 
     # Received signals
     parser.add_argument("--V_r_amp", type=float, default=140_000, help="Received voltage amplitude [V]")
-    parser.add_argument("--V_r_angle", type=float, default=0.9, help="Received voltage power factor (cos phi)")
+    parser.add_argument("--V_r_angle", type=float, default=0.8, help="Received voltage power factor (cos phi)")
     parser.add_argument("--I_r_amp", type=float, default=None, help="Received current amplitude [A] (default = rateC of conductor)")
-    parser.add_argument("--I_r_angle", type=float, default=0.0, help="Received current angle [rad]")
+ 
 
     return parser.parse_args()
 
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     param_values, problem, error_intervals = generate_sobol_samples_from_standards(
         CT_class=args.CT_class,
         VT_class=args.VT_class,
-        N_samples=args.N_samples,
+        N_samples=2**args.N_samples,
         calc_second_order=True
     )
 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     # Received signals
     V_r_amp = args.V_r_amp
     V_r_angle = np.arccos(args.V_r_angle)  # convert PF -> angle
-    I_r_angle = args.I_r_angle
+    I_r_angle = 0
 
 
 # -------------------------------
@@ -117,9 +117,9 @@ params = build_model_params(
 # -------------------------------
 # Model evaluation
 # -------------------------------
-Y = T_A_model(param_values, params)
+Y = T_A_model(param_values, params, problem)
 
-# -------------------------------
+# ------------------------------- 
 # Sobol analysis
 # -------------------------------
 Si = run_sobol_analysis(problem, Y)
@@ -135,9 +135,9 @@ S2 = Si["S2"]
 results_folder = "results/figures/sobol"
 os.makedirs(results_folder, exist_ok=True)
 
-plot_sobol_first_order(S1, S1_conf, problem, os.path.join(results_folder,"sobol_S1_TA.png"))
-plot_sobol_total_effect(ST, ST_conf, problem, os.path.join(results_folder,"sobol_ST_TA.png"))
-plot_sobol_second_order(S2, problem, os.path.join(results_folder,"sobol_S2_TA.png"))
+plot_sobol_first_order(S1, S1_conf, problem, os.path.join(results_folder,"sobol_S1.png"))
+plot_sobol_total_effect(ST, ST_conf, problem, os.path.join(results_folder,"sobol_ST.png"))
+plot_sobol_second_order(S2, problem, os.path.join(results_folder,"sobol_S2.png"))
 
 
 # -------------------------------
@@ -147,4 +147,4 @@ sobol_results = {
     "S1": {name: [value] for name, value in zip(problem["names"], Si["S1"])},
     "ST": {name: [value] for name, value in zip(problem["names"], Si["ST"])},
 }
-log_sobol_indices(sobol_results, folder="results/logs", filename_prefix="sobol_run")
+log_sobol_indices(sobol_results, folder="results/logs", filename_prefix="run_sobol")
