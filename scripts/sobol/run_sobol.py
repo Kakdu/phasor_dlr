@@ -49,7 +49,8 @@ def parse_args():
     parser.add_argument("--T_nom", type=float, default=50, help="Nominal temperature [°C]")
 
     # Received signals
-    parser.add_argument("--V_r_amp", type=float, default=140_000, help="Received voltage amplitude [V]")
+    VrAmpDefault = 140_000/np.sqrt(3)
+    parser.add_argument("--V_r_amp", type=float, default=VrAmpDefault)
     parser.add_argument("--V_r_angle", type=float, default=0.8, help="Received voltage power factor (cos phi)")
     parser.add_argument("--I_r_amp", type=float, default=None, help="Received current amplitude [A] (default = rateC of conductor)")
  

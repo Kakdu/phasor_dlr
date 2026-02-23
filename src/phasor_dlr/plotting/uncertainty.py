@@ -371,6 +371,7 @@ def plot_temperature_variance(I_r_sweep, temp_variance, folder="results/figures/
 
         # Choose linestyle per conductor
         linestyle = "--" if cond_name == "bohus" else ":"
+        marker = "o" if cond_name == "bohus" else "s"
 
         # Outside operating range (black)
         if np.any(outside_mask):
@@ -390,9 +391,10 @@ def plot_temperature_variance(I_r_sweep, temp_variance, folder="results/figures/
                 I_r[inside_mask],
                 var_T[inside_mask],
                 color="tab:blue",
-                lw=4,
+                marker=marker,
+                lw=2,
                 linestyle="-",
-                label="Operational Currents" if cond_name == "gota" else "",
+                label=f"Operational Currents {cond_name}",
                 zorder=2,
             )
 

@@ -40,15 +40,6 @@ parser.add_argument("--curr", type=int, default=0)
 args = parser.parse_args()
 
 
-
-# --------------------------
-# Phasor dataclass
-# --------------------------
-@dataclass(frozen=False)
-class phasor:
-    amplitude: float
-    angle: float
-
 # --------------------------
 # π-model sending phasor function
 # --------------------------
@@ -91,9 +82,7 @@ def turn_on_exp(x, x0=0.0, tau=1.0, A=1.0):
 # Conductor parameters
 # --------------------------
 condParameter = condParameters[args.cond]
-# --------------------------
-# Precision and Accuracy Standards
-# --------------------------
+
 
 # -------------------------------
 # Measurement accuracy and variance
@@ -105,6 +94,7 @@ sigma_V = combined_uniforms_sigma(accuracy_r.r_V)
 sigma_I = combined_uniforms_sigma(accuracy_r.r_I)
 sigma_phiV = combined_uniforms_sigma(accuracy_r.theta_V)
 sigma_phiI = combined_uniforms_sigma(accuracy_r.theta_I)
+
 
 # --------------------------
 # UKF parameters
@@ -126,7 +116,7 @@ gamma = 10
 alpha, beta, kappa = 1e-3, 2, 0
 Q = np.diag([0.1, 0.1, 0.01, 0.00001, 0.00001])
 Q = Q / 500
-R = np.diag([138_000**2*sigma_V**2, 900*sigma_I**2, 138_000**2*sigma_V**2, 900*sigma_I**2, (sigma_phiV**2 + sigma_phiI**2), (sigma_phiV**2 + sigma_phiI**2)])
+R = np.diag([140_000**2*sigma_V**2 / 3, 900*sigma_I**2, 140_000**2*sigma_V**2 / 3, 900*sigma_I**2, (sigma_phiV**2 + sigma_phiI**2), (sigma_phiV**2 + sigma_phiI**2)])
 lambda_ = alpha**2*(n+kappa) - n
 Wm = np.full(2*n+1, 0.5/(n+lambda_))
 Wc = Wm.copy()
@@ -138,7 +128,7 @@ Wc[0] = Wm[0] + (1 - alpha**2 + beta)
 # --------------------------
 x = np.linspace(1, steps, steps)
 T_true = 55 + 2*np.sin(np.linspace(0,5*minutes/100,steps))
-V_r_true = phasor(138_000,0)
+V_r_true = phasor(140_000/np.sqrt(3),0)
 I_r_true = phasor(800 + 25*np.sin(np.linspace(0,4*minutes/100,steps)), - np.arccos(0.8) + 0.05*np.sin(np.linspace(0,4*minutes/100,steps)))
 
 if args.conv == 1:
@@ -189,8 +179,8 @@ T_meas = np.array([T_from_measurements(
 # --------------------------
 # UKF initialization
 # --------------------------
-x_est = np.array([55.0, 138_000, 800, np.arccos(0.8), np.arccos(0.8)])
-P = np.diag([160.0, 138_000**2 * sigma_V**2, 900**2 * sigma_I**2, sigma_phiV**2 + sigma_phiI**2, sigma_phiV**2 + sigma_phiI**2])
+x_est = np.array([55.0, 140_000/np.sqrt(3), 800, np.arccos(0.8), np.arccos(0.8)])
+P = np.diag([160.0, 140_000**2 / 3 * sigma_V**2, 800**2 * sigma_I**2, sigma_phiV**2 + sigma_phiI**2, sigma_phiV**2 + sigma_phiI**2])
 
 X_est = np.zeros((steps,n))
 V_s_est_list = np.zeros(steps)

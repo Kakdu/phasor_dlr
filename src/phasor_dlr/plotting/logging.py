@@ -220,7 +220,6 @@ def log_bayesian_run(trace, T_nom=None, folder="results/logs", filename_prefix="
     hdi_95 = az.hdi(trace, var_names=["T_AV"], hdi_prob=0.95)["T_AV"].values
     hdi_width = 0.5 * (hdi_95[1] - hdi_95[0])
     
-    rmse_val = np.sqrt(np.mean((samples - T_nom)**2))
 
     lines = [
         f"T_AV Posterior Summary:",
@@ -232,6 +231,7 @@ def log_bayesian_run(trace, T_nom=None, folder="results/logs", filename_prefix="
     ]
     
     if T_nom is not None:
+        rmse_val = np.sqrt(np.mean((samples - T_nom)**2))
         lines.append(f"  Nominal T_nom: {T_nom:.6g}")
         lines.append(f"  Mean deviation from T_nom: {mean_val - T_nom:.6g}")
         lines.append(f"  RMSE w.r.t. T_nom: {rmse_val:.6g}")

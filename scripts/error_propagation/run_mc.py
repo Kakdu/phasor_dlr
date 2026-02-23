@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import os
+import matplotlib as mpl
 
 # Import mc model
 from phasor_dlr.estimation.error_propagation.mc import monte_carlo_multi
@@ -30,7 +31,8 @@ parser.add_argument("--CT_class", type=str, default="5P")
 parser.add_argument("--VT_class", type=str, default="0.2")
 parser.add_argument("--cond", type=str, default="bohus")
 
-parser.add_argument("--VrAmp", type=float, default=140000.0)
+VrAmpDefault = 140_000/np.sqrt(3)
+parser.add_argument("--VrAmp", type=float, default=VrAmpDefault)
 parser.add_argument("--VrAngle", type=float, default=0.8)
 parser.add_argument("--IrAmp", type=float, default=None)
 parser.add_argument("--T_nom", type=float, default=50)
@@ -92,6 +94,13 @@ I_r_angle_array = np.full(args.M, I_r_angle)
 # -------------------------------
 V_s_amp_array, V_s_angle_array, I_s_amp_array, I_s_angle_array = pi_model_sending_phasor(V_r_amp_array, V_r_angle_array, I_r_amp_array, I_r_angle_array, Z, Y)
 
+print(V_s_amp_array[0])
+print(I_s_amp_array[0])
+print(V_s_angle_array[0])
+print(I_s_angle_array[0])
+print(V_s_angle_array[0] - I_s_angle_array[0])
+
+print(V_r_angle_array[0] - I_r_angle_array[0])
 
 # -------------------------------
 # MC run
@@ -137,6 +146,9 @@ print("====== Calculations complete. Plotting Distributions =======")
 # -------------------------------
 folder = "results/figures/error_propagation"
 os.makedirs(folder, exist_ok=True)
+
+mpl.rcParams['xtick.labelsize'] = 15
+mpl.rcParams['ytick.labelsize'] = 15
 
 if args.M > 1:
     filename = "KDETemp"

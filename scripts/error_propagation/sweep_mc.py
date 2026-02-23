@@ -28,7 +28,8 @@ parser.add_argument("--CT_class", type=str, default="5P")
 parser.add_argument("--VT_class", type=str, default="0.2")
 parser.add_argument("--cond", type=str, default="bohus")
 
-parser.add_argument("--VrAmp", type=float, default=140000.0)
+VrAmpDefault = 140_000/np.sqrt(3)
+parser.add_argument("--VrAmp", type=float, default=VrAmpDefault)
 parser.add_argument("--VrAngle", type=float, default=0.8)
 parser.add_argument("--T_nom", type=float, default=50)
 
