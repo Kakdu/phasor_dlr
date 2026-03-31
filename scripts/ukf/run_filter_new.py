@@ -22,7 +22,7 @@ DEFAULTS = {
     "seed": 1,
     "cond": "bohus",
     "conf": 95,
-    "stand": "5P"
+    "stand": "0.2"
 }
 
 parser = argparse.ArgumentParser(description="Run power system script.")
@@ -30,7 +30,7 @@ parser = argparse.ArgumentParser(description="Run power system script.")
 parser.add_argument("--min", type=int, default=DEFAULTS["min"])
 parser.add_argument("--seed", type=int, default=DEFAULTS["seed"])
 parser.add_argument("--conf", type=int, default=DEFAULTS["conf"])
-parser.add_argument("--CT_class", type=str, default="5P")
+parser.add_argument("--CT_class", type=str, default="0.2")
 parser.add_argument("--VT_class", type=str, default="0.2")
 parser.add_argument("--cond", type=str, default=DEFAULTS["cond"])
 
@@ -300,6 +300,17 @@ rmse_T = np.sqrt(np.mean((T_est_list - T_true)**2))
 mae_T = np.mean(np.abs(T_est_list - T_true))
 var_T = np.mean(sigma_list[:,0])
 
+print("===== Total =====")
+print(f"RMSE of temperature estimates: {rmse_T:.4f} deg C")
+print(f"MAE of temperature estimates: {mae_T:.4f} deg C")
+print(f"Variance of temperature estimates: {var_T:.4f}")
+
+rmse_T = np.sqrt(np.mean((T_est_list[0:60*steps_psec] - T_true[0:60*steps_psec])**2))
+mae_T = np.mean(np.abs(T_est_list[0:60*steps_psec] - T_true[0:60*steps_psec]))
+var_T = np.mean(sigma_list[0:60*steps_psec,0])
+
+
+print("===== First minute =====")
 print(f"RMSE of temperature estimates: {rmse_T:.4f} deg C")
 print(f"MAE of temperature estimates: {mae_T:.4f} deg C")
 print(f"Variance of temperature estimates: {var_T:.4f}")
@@ -366,6 +377,119 @@ plt.grid(False)
 plt.savefig(os.path.join(folder, "Temperature_with_limits.png"), dpi=300)
 plt.close()
 
+from matplotlib.patches import Rectangle, ConnectionPatch
+
+sec = 30
+first_minute_steps = min(sec * steps_psec, steps)
+
+t_zoom = t_min[:first_minute_steps]
+T_est_zoom = T_est_list[:first_minute_steps]
+T_true_zoom = T_true[:first_minute_steps]
+sigma_zoom = sigma_list[:first_minute_steps, 0]
+
+fig, (ax_zoom, ax_main) = plt.subplots(
+    2, 1,
+    figsize=(12,6),
+    gridspec_kw={"height_ratios":[1,1]}
+)
+
+# --------------------------
+# TOP: first minute zoom
+# --------------------------
+ax_zoom.plot(60*t_zoom, T_est_zoom, color='tab:blue')
+ax_zoom.fill_between(
+    60*t_zoom,
+    T_est_zoom - k_val * sigma_zoom,
+    T_est_zoom + k_val * sigma_zoom,
+    color='tab:blue',
+    alpha=0.25
+)
+ax_zoom.plot(60*t_zoom, T_true_zoom, color='black', linewidth=1)
+
+ax_zoom.set_xlim(0,sec)
+ax_zoom.set_ylabel('Temperature [°C]')
+
+# --------------------------
+# BOTTOM: full simulation
+# --------------------------
+ax_main.plot(60*t_min, T_est_list, color='tab:blue', label='Estimated temperature')
+ax_main.fill_between(
+    60*t_min,
+    T_est_list - k_val * sigma_list[:,0],
+    T_est_list + k_val * sigma_list[:,0],
+    color='tab:blue',
+    alpha=0.25,
+    label=f'{confidence}% CI'
+)
+ax_main.plot(60*t_min, T_true, color='black', linewidth=1)
+
+ax_main.set_xlabel("Time [seconds]")
+ax_main.set_ylabel("Temperature [°C]")
+ax_main.legend()
+
+
+# --------------------------
+# Compute CI bounds for first minute
+# --------------------------
+ci_lower = T_est_zoom - k_val * sigma_zoom
+ci_upper = T_est_zoom + k_val * sigma_zoom
+
+ymin_zoom = min(ci_lower.min(), T_true_zoom.min())
+ymax_zoom = max(ci_upper.max(), T_true_zoom.max())
+
+# add small margin
+margin = 0.05 * (ymax_zoom - ymin_zoom)
+
+ymin_zoom -= margin
+ymax_zoom += margin
+
+
+# --------------------------
+# Draw zoom rectangle
+# --------------------------
+rect = Rectangle(
+    (0, ymin_zoom),              # x start, y start
+    sec,                           # width = some sec
+    ymax_zoom - ymin_zoom,       # height based on CI
+    linewidth=1.2,
+    edgecolor='0.35',
+    facecolor='none',
+    linestyle='--'
+)
+
+ax_main.add_patch(rect)
+
+con1 = ConnectionPatch(
+    xyA=(0, ymax_zoom),
+    coordsA=ax_main.transData,
+    xyB=(0, ax_zoom.get_ylim()[0]),
+    coordsB=ax_zoom.transData,
+    color="0.35",
+    linewidth=1
+)
+
+con2 = ConnectionPatch(
+    xyA=(sec, ymax_zoom),
+    coordsA=ax_main.transData,
+    xyB=(sec, ax_zoom.get_ylim()[0]),
+    coordsB=ax_zoom.transData,
+    color="0.35",
+    linewidth=1
+)
+
+fig.add_artist(con1)
+fig.add_artist(con2)
+
+plt.tight_layout()
+
+plt.savefig(
+    os.path.join(folder, "Temperature_with_limits.png"),
+    dpi=400,
+    bbox_inches="tight"
+)
+
+plt.close()
+
 # --- Temperature difference with limits ---
 plt.figure()
 plt.plot(t_min, T_est_list - T_true, color='tab:blue', label='Est - True')
@@ -406,5 +530,76 @@ t_min_smooth = np.arange(len(T_est_smooth)) / 60
 save_plot(T_true_smooth, T_est_smooth, sigma_T_smooth,
           'Temperature [°C]', 'Temperature_estimates.png',
           steps_psec, confidence, color='tab:blue')
+
+# --------------------------
+# First minute estimation error (independent plot)
+# --------------------------
+first_minute_steps = min(60 * steps_psec, steps)
+
+t_sec = np.arange(first_minute_steps) / steps_psec
+err = T_est_list[:first_minute_steps] - T_true[:first_minute_steps]
+sigma = sigma_list[:first_minute_steps, 0]
+
+plt.figure()
+plt.plot(t_sec, err, color='tab:blue', label='Estimation error')
+plt.fill_between(
+    t_sec,
+    err - k_val * sigma,
+    err + k_val * sigma,
+    color='tab:blue',
+    alpha=0.3,
+    label=f'{confidence}% CI'
+)
+
+plt.axhline(0, color='black', linewidth=0.8)
+
+plt.xlabel('Time [s]')
+plt.ylabel('Temperature Error [°C]')
+plt.legend()
+plt.grid(False)
+
+plt.savefig(os.path.join(folder, "error_first_minute.png"), dpi=300)
+plt.close()
+
+# --------------------------
+# Histogram of temperature estimation errors with Gaussian fit
+# --------------------------
+
+
+# --- Remove first 5% (filter warm-up) ---
+start_idx = int(0.05 * steps)
+temp_errors = T_est_list[start_idx:] - T_true[start_idx:]
+
+# --- Gaussian fit ---
+mu = np.mean(temp_errors)
+sigma = np.std(temp_errors)
+
+# --- Histogram ---
+plt.figure()
+counts, bins, _ = plt.hist(
+    temp_errors,
+    bins=60,
+    density=True,
+    label="Error histogram"
+)
+
+# --- Gaussian curve ---
+x_vals = np.linspace(bins[0], bins[-1], 400)
+gaussian = norm.pdf(x_vals, mu, sigma)
+
+plt.plot(
+    x_vals,
+    gaussian,
+    linewidth=2,
+    label=f'Gaussian fit\nμ={mu:.3f}, σ={sigma:.3f}'
+)
+
+plt.xlabel('Temperature Error [°C]')
+plt.ylabel('Probability Density')
+plt.legend()
+plt.grid(False)
+
+plt.savefig(os.path.join(folder, "temperature_error_histogram_gaussian.png"), dpi=300)
+plt.close()
 
 print("UKF simulation complete. Selected plots saved to files.")

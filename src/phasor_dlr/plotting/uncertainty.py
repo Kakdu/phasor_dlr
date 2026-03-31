@@ -360,8 +360,8 @@ def plot_temperature_variance(I_r_sweep, temp_variance, folder="results/figures/
     plt.figure()
 
     for cond_name, var_T in temp_variance.items():
-        rateC = 0.8 * condParameters[cond_name]["rateC"]
-        rateA = 1.3 * condParameters[cond_name]["rateA"]
+        rateC = 0 * condParameters[cond_name]["rateC"]
+        rateA = 100 * condParameters[cond_name]["rateA"]
 
         I_r = np.array(I_r_sweep)
         var_T = np.sqrt(np.array(var_T))  # variance -> std
@@ -394,11 +394,11 @@ def plot_temperature_variance(I_r_sweep, temp_variance, folder="results/figures/
                 marker=marker,
                 lw=2,
                 linestyle="-",
-                label=f"Operational Currents {cond_name}",
+                label=f"{cond_name}",
                 zorder=2,
             )
 
-    plt.xlabel("Received Current Amplitude $\iota^{(r)}$ [A]")
+    plt.xlabel("Received Current Magnitude $\iota^{(r)}$ [A]")
     plt.ylabel(
         "Temperature Standard Deviation $\\mathrm{Std}(T_{\\mathrm{AV}})$ [$^\circ$C]"
     )

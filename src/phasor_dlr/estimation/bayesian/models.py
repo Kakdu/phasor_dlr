@@ -108,7 +108,8 @@ def run_model_for_N(
         N,
         accuracy_r,
         accuracy_s,
-        seed=seed
+        seed_r=seed,
+        seed_s=seed+1
     )
 
     # -------------------------------

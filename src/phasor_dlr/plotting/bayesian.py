@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import os
 
 def prior_label(prior):
-    return "Physics-informed" if prior else "Engineer-informed"
+    return "SI" if prior else "WI"
 
 def plot_rmse_vs_N(
     results,
@@ -75,7 +75,7 @@ def plot_hdi_vs_N(
     lws = [1, 1.5, 2.25] if len(levels) > 1 else [1.5]
     markers = ["o", "s", "^"] if len(keys) > 1 else [""]
 
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(12, 4))
 
     for i_idx, prior in enumerate(results.keys()):
         for k_idx, key in enumerate(keys):
@@ -117,9 +117,8 @@ def plot_hdi_vs_N(
 
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_xlabel("N (number of measurements)")
-    ax.set_ylabel(r"$\Delta T$ [C]")
-    ax.set_title("HDI intervals vs N")
+    ax.set_xlabel("Number of Measurements")
+    ax.set_ylabel(r"HDI half-width [$^\circ$C]")
     ax.grid(True)
     ax.legend()
 

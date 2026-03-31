@@ -72,18 +72,19 @@ if args.IrAmp is None:
     I_r_amp = 1 * condParam["rateC"]
 else:
     I_r_amp = args.IrAmp
-V_r_amp = args.VrAmp
+V_r_amp = args.VrAmp/np.sqrt(3)
 V_r_angle = np.arccos(args.VrAngle)  # convert PF -> angle
 I_r_angle = 0
 
 # -------------------------------
 # Iteration variables
 # -------------------------------
-Nlist = [1, 5, 20, 50, 90, 150, 200, 500, 900, 1200, 2400, 3000, 5000, 10000, 20000, 50000, 60000]
-levels = [0.90, 0.95, 0.99]
-prior_choice = [True, False]
-keys = ["0.2"]
+Nlist = [1, 5, 20, 50, 90, 150, 200, 350, 500, 900, 1200, 2400, 3000, 5000, 10000, 20000, 50000, 60000]
+levels = [0.95]
+prior_choice = [False, True]
+keys = ["5P", "0.2"]
 results = {}
+
 # -------------------------------
 # Loops
 # -------------------------------
@@ -98,6 +99,7 @@ for idx, prior in enumerate(prior_choice):
         sigma_logI = combined_uniforms_logsigma(accuracy_r.r_I)
         sigma_phiV = combined_uniforms_sigma(accuracy_r.theta_V)
         sigma_phiI = combined_uniforms_sigma(accuracy_r.theta_I)
+
         for N in Nlist:
             print(f"Running N = {N}")
             out = run_model_for_N(
@@ -129,7 +131,9 @@ for idx, prior in enumerate(prior_choice):
             if out["hdi"][levels[-1]] < 5:
                 break
 
-
+# -------------------------------
+# Plots
+# -------------------------------
 folder = "results/figures/bayesian"
 os.makedirs(folder, exist_ok=True)
 
